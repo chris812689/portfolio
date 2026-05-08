@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:public.tableau.com)",
+      "WebFetch(domain:api.anthropic.com)"
+    ]
+  }
+}
