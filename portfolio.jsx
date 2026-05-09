@@ -260,7 +260,7 @@ function About({ t }) {
             ))}
           </div>
           <a
-            href="https://www.credly.com/badges/your-badge-id"
+            href="https://www.credly.com/users/christopher-williams.dfb463ca"
             target="_blank"
             rel="noopener noreferrer"
             className="cert-card"
@@ -592,13 +592,31 @@ function Portfolio({ t }) {
 // ── Section: Contact ─────────────────────────────────────────────────────────
 function Contact({ t }) {
   const [form, setForm] = useState({ name: "", email: "", project: "analytics", msg: "" });
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | loading | sent | error
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(id);
   }, []);
-  const submit = (e) => { e.preventDefault(); setSent(true); };
+  const submit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    try {
+      const res = await fetch("https://formspree.io/f/xzdojlwl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ name: form.name, email: form.email, project: form.project, message: form.msg }),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        setForm({ name: "", email: "", project: "analytics", msg: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  };
   const nyTime = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(now);
 
   return (
@@ -686,8 +704,8 @@ function Contact({ t }) {
             <span>Tell me about it</span>
             <textarea rows={5} value={form.msg} onChange={(e) => setForm({ ...form, msg: e.target.value })} placeholder="A few sentences on what you're trying to figure out…" />
           </label>
-          <button type="submit" className="btn-primary contact-submit" style={{ background: t.teal }}>
-            {sent ? "Sent ✓ — talk soon" : (<>Send message <Icon.arrow width="16" height="16" /></>)}
+          <button type="submit" className="btn-primary contact-submit" style={{ background: t.teal }} disabled={status === "loading" || status === "sent"}>
+            {status === "sent" ? "Sent ✓ — talk soon" : status === "loading" ? "Sending…" : status === "error" ? "Failed — try again" : (<>Send message <Icon.arrow width="16" height="16" /></>)}
           </button>
         </form>
       </div>
